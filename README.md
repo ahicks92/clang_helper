@@ -25,3 +25,5 @@ Type "help", "copyright", "credits" or "license" for more information.
 (<clang.cindex.Cursor object at 0x02287B70>, ('alGetString', ('int', 'param')))
 >>>
 ~~~
+
+As is evident from the above, you have to have clang working, and it is (currently) your responsibility to install it, specify library paths, and create the translation unit.  The functions herein work with cursors after they have been extracted.
