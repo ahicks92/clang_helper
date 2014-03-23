@@ -1,5 +1,6 @@
 class ExtractedObject(object):
-	pass
+	def __init__(self, cursor):
+		self.cursor = cursor
 
 class Macro(ExtractedObject):
 	"""An extracted macro of the form #define constant value."""
