@@ -1,10 +1,21 @@
-def flatten_cursor(cursor):
-	"""Turns a cursor into a iterator of cursors which contains itself and all of its children, recursively."""
-	yield cursor
-	for i in cursor.get_children():
-		for j in flatten_cursor(i):
-			yield j
+class ExtractedObject(object):
+	pass
 
+class Macro(ExtractedObject):
+	"""An extracted macro of the form #define constant value."""
 
+	def __init__(self, name, value, *args, **kwargs):
+		super(Macro, self).__init__(*args, **kwargs)
+		self.name = name
+		self.value = value
 
+class ExtractedFunction(ExtractedObject):
+	"""A function."""
+
+	def __init__(self, name, return_type, arguments, *args, **kwargs):
+		"""Arguments is a list: [(type1, name1), (type2, name2), ...]."""
+		super(ExtractedFunction, self).__init__(*args, **kwargs)
+		self.name = name
+		self.return_type = return_type
+		self.arguments = arguments
 
