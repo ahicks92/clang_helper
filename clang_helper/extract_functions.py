@@ -1,4 +1,4 @@
-from . import flatten_cursor
+from .flatten_cursor import flatten_cursor
 import clang.cindex as cindex
 import itertools
 
