@@ -5,6 +5,7 @@ import blist
 import itertools
 import clang.cindex as cindex
 from . flatten_cursor import flatten_cursor
+from . import Macro
 
 def extract_preprocessor_cursors(cursor):
 	"""Get all preprocessor definitions from a cursor."""
@@ -33,22 +34,18 @@ def extract_macro_constants(cursor):
 This function is unable to handle more complex macros."""
 	macro_definitions = extract_macros(cursor)
 	macro_tokens= cursor_list_to_tokens(macro_definitions)
-	#let's build a python dict of macros, and see what comes out.
-	#because of reasons, this is actually unzip and python doesn't appear to give us one.
-	macros = zip(*macro_tokens)[1]
 	#let's go through it again, this time extracting all macros that are in some way a number.
-	numeric_macros = blist.blist()
-	for i in macros:
+	for i in macro_tokens:
 		try:
-			number_string = i[1]
+			number_string = i[1][1]
 			base = 10
-			if i[1].startswith('0x'):
-				number_string = i[1][2:]
+			if number_string.startswith('0x'):
+				number_string = number_string[2:]
 				base = 16
 			val = int(number_string, base)
 		except ValueError:
 			try:
-				val = float(i[1])
+				val = float(i[1][1])
 			except ValueError:
 				continue #this is an odd macro that we can't understand.
-		yield (i[0], val)
+		yield Macro(cursor = i[0], name = i[1][0], value = val)

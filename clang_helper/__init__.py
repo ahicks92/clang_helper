@@ -10,7 +10,7 @@ class Macro(ExtractedObject):
 		self.name = name
 		self.value = value
 
-class ExtractedFunction(ExtractedObject):
+class Function(ExtractedObject):
 	"""A function."""
 
 	def __init__(self, name, return_type, arguments, *args, **kwargs):
