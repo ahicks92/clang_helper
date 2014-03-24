@@ -1,6 +1,7 @@
 from .flatten_cursor import flatten_cursor
 import clang.cindex as cindex
 import itertools
+from . import Function
 
 def extract_functions(cursor):
 	"""Returns a list of tuples of the following format:
@@ -14,9 +15,9 @@ Note that the types returned are canonical, that is, they are what would result 
 	function_cursors = itertools.ifilter(lambda c: c.kind == cindex.CursorKind.FUNCTION_DECL, flatten_cursor(cursor))
 	for i in function_cursors:
 		name = i.spelling
+		return_type = i.result_type.get_canonical().spelling
 		arguments = filter(lambda x: x.kind == cindex.CursorKind.PARM_DECL, flatten_cursor(i))
 		out = []
-		out.append(name)
 		for j in arguments:
 			out.append((j.type.get_canonical().spelling, j.spelling))
-		yield (i, tuple(out))
+		yield Function(name = name, return_type = return_type, arguments = tuple(out), cursor = i)
