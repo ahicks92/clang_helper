@@ -1,6 +1,8 @@
 clang_helper
 ============
 
+*Important*: As of this writing (Clang 3.3) the Clang bindings on Pypi are missing an important and necessary attribute, `Type.spelling`.  Use the bindings included with this repository or the bindings included with the llvm and clang repositories if this error comes up.
+
 This is a python module for the extraction of interesting features from source files.  At the moment, macro definitions and function definitions are supported.  This project depends on libclang's python bindings.
 
 Macros of the form `#define constant 1234` can be extracted into python dicts: `{'constant': 1234}`
