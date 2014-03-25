@@ -5,7 +5,7 @@ import blist
 import itertools
 import clang.cindex as cindex
 from . flatten_cursor import flatten_cursor
-from . import Macro
+from .extracted_features import Macro
 
 def extract_preprocessor_cursors(cursor):
 	"""Get all preprocessor definitions from a cursor."""

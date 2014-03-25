@@ -1,3 +1,5 @@
+"""This module contains classes that describe features extracted fromC source files."""
+
 class ExtractedObject(object):
 	def __init__(self, cursor):
 		self.cursor = cursor

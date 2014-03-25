@@ -1,7 +1,7 @@
 from .flatten_cursor import flatten_cursor
 import clang.cindex as cindex
 import itertools
-from . import Function
+from .extracted_features import Function
 
 def extract_functions(cursor):
 	"""Returns a list of tuples of the following format:
