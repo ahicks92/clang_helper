@@ -10,6 +10,15 @@ class ExtractedObject(object):
 	def __unicode__(self):
 		return unicode(self.__str__())
 
+	@property
+	def file(self):
+		"""Returns the name of the file to which this object is associated, or the empty string if it is associated with no file (this happens for some special compiler macros)."""
+		return self.cursor.location.file.name if self.cursor.location.file is not None else ""
+
+	@property
+	def line(self):
+		return self.cursor.location.line
+
 class Macro(ExtractedObject):
 	"""An extracted macro of the form #define constant value."""
 
