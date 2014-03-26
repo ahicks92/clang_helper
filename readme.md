@@ -5,27 +5,43 @@ clang_helper
 
 This is a python module for the extraction of interesting features from source files.  At the moment, macro definitions and function definitions are supported.  This project depends on libclang's python bindings.
 
-Macros of the form `#define constant 1234` can be extracted into python dicts: `{'constant': 1234}`
 
-And functions are turned into lists as follows:
+Rather than reading about me discussing the functionality of this library, consider instead the following informative example which prints information about the OpenAL headers.
 
 ~~~Python
-C:\projects\clang_helper>python
-Python 2.7.6 (default, Nov 10 2013, 19:24:18) [MSC v.1500 32 bit (Intel)] on win
-32
-Type "help", "copyright", "credits" or "license" for more information.
->>> import clang.cindex as cindex
->>> import clang_helper
->>> from clang_helper import extract_functions
->>> ind = cindex.Index.create()
->>> tu = ind.parse('../camlorn_audio_rewrite/all_open_al.h')
->>> func = list(extract_functions.extract_functions(tu.cursor))[5]
->>> print func
-(<clang.cindex.Cursor object at 0x022872B0>, ('alDisable', ('int', 'capability')
-))
->>> print list(extract_functions.extract_functions(tu.cursor))[7]
-(<clang.cindex.Cursor object at 0x02287B70>, ('alGetString', ('int', 'param')))
->>>
+import clang_helper
+info = clang_helper.FeatureExtractor(['../camlorn_audio_rewrite/all_open_al.h'])
+for i in info.functions_list[5:15]:
+	print i
+for i in filter(lambda  x: 'AL_' in x.name, info.macros_list)[5:15]:
+	print i
 ~~~
 
-As is evident from the above, you have to have clang working, and it is (currently) your responsibility to install it, specify library paths, and create the translation unit.  The functions herein work with cursors after they have been extracted.
+For me, this yields:
+
+~~~
+Function: void alDisable(int capability)
+Function: char alIsEnabled(int capability)
+Function: const char * alGetString(int param)
+Function: void alGetBooleanv(int param,char * values)
+Function: void alGetIntegerv(int param,int * values)
+Function: void alGetFloatv(int param,float * values)
+Function: void alGetDoublev(int param,double * values)
+Function: char alGetBoolean(int param)
+Function: int alGetInteger(int param)
+Function: float alGetFloat(int param)
+Macro: 'AL_TRUE' 1
+Macro: 'AL_SOURCE_RELATIVE' 514
+Macro: 'AL_CONE_INNER_ANGLE' 4097
+Macro: 'AL_CONE_OUTER_ANGLE' 4098
+Macro: 'AL_PITCH' 4099
+Macro: 'AL_POSITION' 4100
+Macro: 'AL_DIRECTION' 4101
+Macro: 'AL_VELOCITY' 4102
+Macro: 'AL_LOOPING' 4103
+Macro: 'AL_BUFFER' 4105
+
+
+~~~
+
+Note that the slicing operations and filter operations are not needed in real code. They simply print out an interesting subset.  The total list of everything being extracted is easily a few hunred items, much too long to print here.

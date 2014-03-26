@@ -28,7 +28,7 @@ class Macro(ExtractedObject):
 		self.value = value
 
 	def __str__(self):
-		return "Macro: " + self.name + " " + self.value
+		return "Macro: " + self.name.__repr__() + " " + self.value.__repr__()
 
 	def __repr__(self):
 		string = "<"
@@ -52,11 +52,12 @@ class Function(ExtractedObject):
 
 
 	def __str__(self):
-		string = "Function: " + self.return_type + " " + self.name + "("
+		string = "Function: " + str(self.return_type) + " " + str(self.name) + "("
 		for i, j in self.arguments:
-			string += i + " " + j + ","
+			string += str(i) + " " + str(j) + ","
 		string = string[:-1]
 		string += ")"
+		return string
 
 	def __repr__(self):
 		string = "<" +self.__module__ + "." + self.__class__.__name__ + "("

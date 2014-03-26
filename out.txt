@@ -1,0 +1,20 @@
+Function: void alDisable(int capability)
+Function: char alIsEnabled(int capability)
+Function: const char * alGetString(int param)
+Function: void alGetBooleanv(int param,char * values)
+Function: void alGetIntegerv(int param,int * values)
+Function: void alGetFloatv(int param,float * values)
+Function: void alGetDoublev(int param,double * values)
+Function: char alGetBoolean(int param)
+Function: int alGetInteger(int param)
+Function: float alGetFloat(int param)
+Macro: 'AL_TRUE' 1
+Macro: 'AL_SOURCE_RELATIVE' 514
+Macro: 'AL_CONE_INNER_ANGLE' 4097
+Macro: 'AL_CONE_OUTER_ANGLE' 4098
+Macro: 'AL_PITCH' 4099
+Macro: 'AL_POSITION' 4100
+Macro: 'AL_DIRECTION' 4101
+Macro: 'AL_VELOCITY' 4102
+Macro: 'AL_LOOPING' 4103
+Macro: 'AL_BUFFER' 4105
