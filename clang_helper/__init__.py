@@ -11,7 +11,9 @@ Most properties are available in two variants: *_dict and *_list.  The dict vari
 """
 
 	def __init__(self, files, exclude_others = False):
-		"""Extracts features only from those files passed in files, an iterable."""
+		"""Extracts features only from those files passed in files, an iterable or a string."""
+		if isinstance(files, str) or isinstance(files, unicode):
+			files = [files]
 		self.files = set(files)
 		self.index = clang.cindex.Index.create()
 		self.translation_units = [self.index.parse(i, options = clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD) for i in self.files]
