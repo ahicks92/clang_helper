@@ -10,13 +10,14 @@ class FeatureExtractor(object):
 Most properties are available in two variants: *_dict and *_list.  The dict variant maps names of entities to their defining object, and the list variant simply returns the objects of that type in some undefined order.
 """
 
-	def __init__(self, files, exclude_others = False):
-		"""Extracts features only from those files passed in files, an iterable or a string."""
+	def __init__(self, files, exclude_others = False, extra_args = ""):
+		"""Extracts features only from those files passed in files, an iterable or a string.
+Extra_args allows one to pass extra options to clang."""
 		if isinstance(files, str) or isinstance(files, unicode):
 			files = [files]
 		self.files = set(files)
 		self.index = clang.cindex.Index.create()
-		self.translation_units = [self.index.parse(i, options = clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD) for i in self.files]
+		self.translation_units = [self.index.parse(i, options = clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD, args = extra_args) for i in self.files]
 		self.cursors = [i.cursor for i in self.translation_units]
 		raw_functions = [func for i in self.cursors for func in extract_functions(i)]
 		raw_macros = [macro for i in self.cursors for macro in extract_macro_constants(i)]
