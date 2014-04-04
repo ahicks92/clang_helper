@@ -56,7 +56,6 @@ Returns a tuple.  The first element is a list of Macro objects; the second is a 
 		token_strings = [transform_token(j) for j in desired_tokens]
 		eval_string = "".join(token_strings)
 		try:
-			print name + ":", eval_string
 			value = eval(eval_string, currently_known_macros)
 			if isinstance(value, type):
 				raise ValueError("Value resolved to class, not instance.")
@@ -66,4 +65,4 @@ Returns a tuple.  The first element is a list of Macro objects; the second is a 
 		m = Macro(value = value, name = name, cursor = i)
 		handled_macros.append(m)
 		currently_known_macros[m.name] = m.value
-	return handled_macros, failed_macros
+	return (handled_macros, failed_macros)

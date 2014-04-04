@@ -8,6 +8,7 @@ import itertools
 class FeatureExtractor(object):
 	"""This object is the interface to all of this module's functions.  Usage is simple; instanciate it with a ist of files, and then use the functions or macros attributes.
 Most properties are available in two variants: *_dict and *_list.  The dict variant maps names of entities to their defining object, and the list variant simply returns the objects of that type in some undefined order.
+This object may fail to extract some macros.  If so, the names of all failed macros can e found in failed_macros.
 """
 
 	def __init__(self, files, exclude_others = False, macros = ()):
@@ -21,7 +22,9 @@ macros allows one to pass a list of macros to define."""
 		self.translation_units = [self.index.parse(i, options = clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD, args = extra_args) for i in self.files]
 		self.cursors = [i.cursor for i in self.translation_units]
 		raw_functions = [func for i in self.cursors for func in extract_functions(i)]
-		raw_macros = [macro for i in self.cursors for macro in extract_macros.extract_macros(i)[0]]
+		raw_macro_tuples  = [extract_macros.extract_macros(i) for i in self.cursors]
+		raw_macros = [j for i in raw_macro_tuples for j in i[0]]
+		failed_macros = [j for i in raw_macro_tuples for j in i[1]]
 		#remove any files we aren't interested in.
 		raw_macros = filter(lambda x: x.file in self.files or not exclude_others, raw_macros)
 		raw_functions = filter(lambda x: x.file in self.files or not exclude_others, raw_functions)
@@ -34,6 +37,7 @@ macros allows one to pass a list of macros to define."""
 		self.functions_dict = dict([(i.name, i) for i in raw_functions])
 		self.macros_list = raw_macros
 		self.functions_list = raw_functions
+		self.failed_macros = failed_macros
 
 	def get_functions_from_file(file):
 		"""Generator.  Yields functions defined in a specific file."""
