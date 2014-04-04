@@ -1,9 +1,9 @@
-"""Utilities for extracting macros and preprocessor definitions from C files.  Depends on Clang's python bindings and Blist.
+"""Utilities for extracting macros and preprocessor definitions from C files.  Depends on Clang's python bindings.
 Note that cursors have children, which are also cursors.  They are not iterators, they are nodes in a tree.
 Everything here uses iterators.  The general strategy is to have multiple passes over the same cursor to extract everything needed, and this entire file can be viewed as filters over raw cursors."""
-import blist
 import itertools
 import clang.cindex as cindex
+import re
 from . flatten_cursor import flatten_cursor
 from .extracted_features import Macro
 
@@ -13,39 +13,57 @@ def extract_preprocessor_cursors(cursor):
 		if i.kind.is_preprocessing():
 			yield i
 
-def extract_macros(c):
+def extract_macro_cursors(c):
 	"""Get all macros from a cursor."""
 	return itertools.ifilter(lambda x: x.kind == cindex.CursorKind.MACRO_DEFINITION, extract_preprocessor_cursors(c))
 
-def cursor_list_to_tokens(iterator):
-	"""Conversts a list of interesting cursors to a tokenized representation.  Returns:
-[(c1, t1), (c2, t2), ..., (cn, tn)]
-Where c1...cn are the original cursors and t1...tn are lists of tokens.
-Helpful note.  For simple C macros, the first token is the macro's name, and the remaining tokens (except for the last in some cases) are the tokenns that define it.  This holds true only for macros without parameters.
-Note that for simple numeric constant macros, t[0] is the name and t[1] is the constant. Even throwing in a parentheses breaks this pattern, however.
-For functions, the useful information can be extracted without hacks, and this function is the wrong method to do so."""
-	for i in iterator:
-		token_strings = [j.spelling for j in i.get_tokens()]
-		yield (i, token_strings)
+def transform_token(token):
+	"""Returns a string representation of token.  If it is a C numeric constant, it is transformed into a python numeric constant."""
+	#these are from python docs.
+	find_float = "[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?"
+	find_int = "[-+]?(0[xX][\dA-Fa-f]+|0[0-7]*|\d+)"
+	untransformed_string = token.spelling
+	try_find_int = re.match(find_int, untransformed_string)
+	try_find_float = re.match(find_float, untransformed_string)
+	new_string = untransformed_string
+	if try_find_int is not None:
+		new_string = try_find_int.group()
+	elif try_find_float is not None:
+		new_string = try_find_float.group()
+	return new_string
 
-def extract_macro_constants(cursor):
-	"""Returns a dict of macros to constants for all macros which are of the form:
-#define foo number
-This function is unable to handle more complex macros."""
-	macro_definitions = extract_macros(cursor)
-	macro_tokens= cursor_list_to_tokens(macro_definitions)
-	#let's go through it again, this time extracting all macros that are in some way a number.
-	for i in macro_tokens:
+def extract_macros(c):
+	"""Uses eval and some regexp magic and general hackiness to extract as many macros as it possibly can.
+Returns a tuple.  The first element is a list of Macro objects; the second is a list of strings that name macros we couldn't handle."""
+	handled_macros = []
+	currently_known_macros = dict()
+	failed_macros = []
+	possible_macro_cursors = extract_macro_cursors(c)
+	#begin the general awfulness.
+	for i in possible_macro_cursors:
+		desired_tokens = list(i.get_tokens())[:-1] #the last one is something we do not need.
+		name_token = desired_tokens[0]
+		name = name_token.spelling
+		desired_tokens = desired_tokens[1:]
+		if len(desired_tokens) == 0:
+			#the value of this macro is none.
+			value = None
+			m = Macro(name = name, value = value, cursor = i)
+			handled_macros.append(m)
+			currently_known_macros[m.name] = m.value
+			continue
+		#otherwise, we have to do some hacky stuff.
+		token_strings = [transform_token(j) for j in desired_tokens]
+		eval_string = "".join(token_strings)
 		try:
-			number_string = i[1][1]
-			base = 10
-			if number_string.startswith('0x'):
-				number_string = number_string[2:]
-				base = 16
-			val = int(number_string, base)
-		except ValueError:
-			try:
-				val = float(i[1][1])
-			except ValueError:
-				continue #this is an odd macro that we can't understand.
-		yield Macro(cursor = i[0], name = i[1][0], value = val)
+			print name + ":", eval_string
+			value = eval(eval_string, currently_known_macros)
+			if isinstance(value, type):
+				raise ValueError("Value resolved to class, not instance.")
+		except:
+			failed_macros.append(name)
+			continue
+		m = Macro(value = value, name = name, cursor = i)
+		handled_macros.append(m)
+		currently_known_macros[m.name] = m.value
+	return handled_macros, failed_macros

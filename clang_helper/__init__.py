@@ -1,6 +1,6 @@
 import clang.cindex
 from .extract_functions import extract_functions
-from .extract_macros import extract_macro_constants
+import extract_macros
 import collections
 import blist
 import itertools
@@ -21,7 +21,7 @@ macros allows one to pass a list of macros to define."""
 		self.translation_units = [self.index.parse(i, options = clang.cindex.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD, args = extra_args) for i in self.files]
 		self.cursors = [i.cursor for i in self.translation_units]
 		raw_functions = [func for i in self.cursors for func in extract_functions(i)]
-		raw_macros = [macro for i in self.cursors for macro in extract_macro_constants(i)]
+		raw_macros = [macro for i in self.cursors for macro in extract_macros.extract_macros(i)[0]]
 		#remove any files we aren't interested in.
 		raw_macros = filter(lambda x: x.file in self.files or not exclude_others, raw_macros)
 		raw_functions = filter(lambda x: x.file in self.files or not exclude_others, raw_functions)
